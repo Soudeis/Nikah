@@ -1186,10 +1186,31 @@ async function registerPush(userId){
     console.error('Push error:', e);
   }
 }
+  async function askNotificationPermission(){
+  const perm = await Notification.requestPermission();
+  if(perm === 'granted'){
+    await registerPush(me.id);
+    showToast('Notifications activées ✓');
+  }
+}
 
+// Afficher le bouton si pas encore demandé
+if(Notification.permission === 'default'){
+  const btn = document.createElement('div');
+  btn.style.cssText = `
+    position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+    background:#f5c518;color:#1a1a1a;padding:12px 24px;border-radius:30px;
+    font-size:14px;font-weight:700;cursor:pointer;z-index:500;
+    box-shadow:0 4px 16px rgba(245,197,24,.5);white-space:nowrap;
+  `;
+  btn.textContent = '🔔 Activer les notifications';
+  btn.onclick = () => { btn.remove(); askNotificationPermission(); };
+  document.body.appendChild(btn);
+}
+initStickerCategories();
 initStickerCategories();
 connectWS();
-registerPush(me.id);;
+registerPush(me.id);
 </script>
 </body>
 </html>
