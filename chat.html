@@ -141,6 +141,33 @@ body{display:flex;justify-content:center;background:linear-gradient(135deg,#ffff
 .upload-spinner{width:40px;height:40px;border:3px solid rgba(245,197,24,.2);border-top-color:#f5c518;border-radius:50%;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:400;white-space:nowrap;border:1px solid rgba(245,197,24,.3);}
+  .sticker-panel{
+  display:none;flex-direction:column;
+  background:#fff;
+  border-radius:20px 20px 0 0;
+  border-top:1px solid rgba(245,197,24,.2);
+  flex-shrink:0;position:relative;z-index:10;
+  height:380px;
+}
+.sticker-panel.active{display:flex;}
+.sticker-handle{width:36px;height:4px;background:rgba(0,0,0,.15);border-radius:2px;margin:10px auto 0;flex-shrink:0;}
+.sticker-search-bar{margin:10px 14px 8px;background:rgba(0,0,0,.05);border-radius:12px;display:flex;align-items:center;gap:8px;padding:8px 12px;flex-shrink:0;}
+.sticker-search-bar svg{width:16px;height:16px;flex-shrink:0;opacity:.4;}
+.sticker-search-input{background:none;border:none;outline:none;font-size:14px;color:#1a1a1a;flex:1;}
+.sticker-search-input::placeholder{color:#ccc;}
+.sticker-categories{display:flex;gap:8px;padding:0 14px 8px;overflow-x:auto;flex-shrink:0;}
+.sticker-categories::-webkit-scrollbar{display:none;}
+.sticker-cat-btn{display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:20px;border:none;cursor:pointer;background:rgba(0,0,0,.06);color:#666;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0;transition:.15s;}
+.sticker-cat-btn.active{background:linear-gradient(135deg,#f5c518,#ffe066);color:#1a1a1a;}
+.sticker-section-title{font-size:10px;font-weight:700;color:#aaa;padding:0 16px 6px;letter-spacing:.8px;flex-shrink:0;}
+.sticker-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:110px;gap:10px;padding:4px 14px 14px;overflow-y:auto;flex:1;align-content:start;}
+.sticker-grid::-webkit-scrollbar{width:3px;}
+.sticker-grid::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);border-radius:2px;}
+.sticker-item{width:100%;height:110px;border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);overflow:hidden;transition:transform .15s;}
+.sticker-item:active{transform:scale(.92);}
+.sticker-item img{width:90px;height:90px;object-fit:contain;}
+.sticker-loading{grid-column:1/-1;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:13px;padding:30px;}
+.media-btn.active-sticker svg{stroke:#f5c518;}
 </style>
 </head>
 <body>
@@ -152,7 +179,7 @@ body{display:flex;justify-content:center;background:linear-gradient(135deg,#ffff
       <h2 id="chat-name"></h2>
       <div class="topbar-sub" id="chat-typing" style="display:none;">en train d'écrire...</div>
     </div>
-  </div>
+   </div> 
 
   <div class="messages-area" id="messages-area"></div>
 
@@ -178,8 +205,20 @@ body{display:flex;justify-content:center;background:linear-gradient(135deg,#ffff
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
   </div>
-
+<div class="sticker-panel" id="sticker-panel">
+  <div class="sticker-handle"></div>
+  <div class="sticker-search-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="sticker-search-input" id="sticker-search" placeholder="Rechercher..." oninput="onStickerSearch(this.value)"/>
+  </div>
+  <div class="sticker-categories" id="sticker-categories"></div>
+  <div class="sticker-section-title" id="sticker-section-title">TENDANCE</div>
+  <div class="sticker-grid" id="sticker-grid"><div class="sticker-loading">Chargement...</div></div>
+</div>
   <div class="input-row" id="input-row">
+    <button class="media-btn" id="sticker-btn" onclick="toggleStickerPanel()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9" stroke-width="3"/><line x1="15" y1="9" x2="15.01" y2="9" stroke-width="3"/></svg>
+</button>
     <button class="media-btn" onclick="pickMedia()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
     </button>
@@ -258,7 +297,116 @@ function getBars(uid){
   if(!waveCache[uid]) waveCache[uid] = generateWaveBars(String(uid), BAR_COUNT);
   return waveCache[uid];
 }
+const GIPHY_KEY = "rO0Vv1XhZjF8umABjU2poD88Ua0Q6C9r";
+const GIPHY_CATEGORIES = [
+  {label:'⭐ Tendance', query:null,  trending:true},
+  {label:'😂 Fun',      query:'funny',trending:false},
+  {label:'❤️ Love',    query:'love', trending:false},
+  {label:'🐱 Animaux', query:'animals',trending:false},
+  {label:'🎉 Fête',    query:'party',trending:false},
+  {label:'😢 Triste',  query:'sad',  trending:false},
+];
+let currentCategory=0, searchTimeout=null;
 
+function initStickerCategories(){
+  const c=document.getElementById('sticker-categories');
+  c.innerHTML=GIPHY_CATEGORIES.map((cat,i)=>
+    `<button class="sticker-cat-btn${i===0?' active':''}" onclick="selectCategory(${i})">${cat.label}</button>`
+  ).join('');
+}
+
+function selectCategory(idx){
+  currentCategory=idx;
+  document.querySelectorAll('.sticker-cat-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  document.getElementById('sticker-search').value='';
+  document.getElementById('sticker-section-title').textContent=GIPHY_CATEGORIES[idx].label.toUpperCase();
+  loadGiphyStickers(GIPHY_CATEGORIES[idx]);
+}
+
+async function loadGiphyStickers(cat){
+  const grid=document.getElementById('sticker-grid');
+  grid.innerHTML='<div class="sticker-loading">Chargement...</div>';
+  try{
+    const url=cat.trending
+      ?`https://api.giphy.com/v1/stickers/trending?api_key=${GIPHY_KEY}&limit=18&rating=g`
+      :`https://api.giphy.com/v1/stickers/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(cat.query)}&limit=18&rating=g`;
+    const res=await fetch(url);
+    const data=await res.json();
+    renderGiphyGrid(data.data||[]);
+  }catch(e){ grid.innerHTML='<div class="sticker-loading">Erreur</div>'; }
+}
+
+async function searchGiphy(q){
+  const grid=document.getElementById('sticker-grid');
+  grid.innerHTML='<div class="sticker-loading">Recherche...</div>';
+  document.getElementById('sticker-section-title').textContent='RÉSULTATS';
+  try{
+    const url=`https://api.giphy.com/v1/stickers/search?api_key=${GIPHY_KEY}&q=${encodeURIComponent(q)}&limit=18&rating=g`;
+    const res=await fetch(url);
+    const data=await res.json();
+    renderGiphyGrid(data.data||[]);
+  }catch(e){ grid.innerHTML='<div class="sticker-loading">Erreur</div>'; }
+}
+
+function renderGiphyGrid(stickers){
+  const grid=document.getElementById('sticker-grid');
+  if(!stickers.length){ grid.innerHTML='<div class="sticker-loading">Aucun résultat</div>'; return; }
+  grid.innerHTML=stickers.map(s=>{
+    const img=s.images.fixed_height;
+    const url=img?img.url:s.images.original.url;
+    return `<div class="sticker-item" onclick="sendSticker('${url}')">
+      <img src="${url}" alt="sticker" loading="lazy" onload="this.style.opacity=1" style="opacity:0;transition:opacity .2s;"/>
+    </div>`;
+  }).join('');
+}
+
+function onStickerSearch(q){
+  clearTimeout(searchTimeout);
+  if(!q.trim()){ selectCategory(currentCategory); return; }
+  searchTimeout=setTimeout(()=>searchGiphy(q),400);
+}
+
+function toggleStickerPanel(){
+  const panel=document.getElementById('sticker-panel');
+  const btn=document.getElementById('sticker-btn');
+  const isOpen=panel.classList.toggle('active');
+  btn.classList.toggle('active-sticker',isOpen);
+  if(isOpen){
+    document.getElementById('msg-input').blur();
+    if(document.getElementById('sticker-grid').querySelector('.sticker-loading')){
+      loadGiphyStickers(GIPHY_CATEGORIES[0]);
+    }
+  }
+}
+
+function sendSticker(url){
+  document.getElementById('sticker-panel').classList.remove('active');
+  document.getElementById('sticker-btn').classList.remove('active-sticker');
+  const now=new Date(), time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  const tempId=`temp_${me.id}_${Date.now()}`;
+  messages.push({
+    from:String(me.id), text:'', media_url:url, media_type:'sticker',
+    is_vocal:false, edited:false, time, msg_id:tempId,
+    created_at:new Date().toISOString(),
+    is_forwarded:false, forwarded_from:null, reactions:[],
+    reply_to_id:replyingTo?.msg_id||null, reply_to_text:replyingTo?.text||null,
+    reply_to_type:replyingTo?.media_type||null, reply_to_from:replyingTo?.from||null,
+  });
+  seen=false; renderMessages();
+  ws?.send(JSON.stringify({
+    action:'send_message', to:friend.id, temp_id:tempId,
+    text:'', media_url:url, media_type:'sticker',
+    reply_to_id:replyingTo?.msg_id||null, reply_to_text:replyingTo?.text||null,
+    reply_to_type:replyingTo?.media_type||null, reply_to_from:replyingTo?.from||null,
+  }));
+  cancelReply();
+}
+
+// Fermer panel si on clique sur l'input
+document.getElementById('msg-input').addEventListener('focus',()=>{
+  document.getElementById('sticker-panel').classList.remove('active');
+  document.getElementById('sticker-btn').classList.remove('active-sticker');
+});
 // ════════════════════════════════════════════
 // WEBSOCKET
 // ════════════════════════════════════════════
@@ -1001,7 +1149,7 @@ function showTyping(isTyping){
   } else if(!isTyping&&tb) tb.remove();
 }
 function onKey(e){ if(e.key==='Enter') sendMessage(); }
-
+initStickerCategories();
 connectWS();
 </script>
 </body>
