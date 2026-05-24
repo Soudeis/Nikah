@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mon Profil - NikahConnect</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;}
+body{display:flex;justify-content:center;background:linear-gradient(135deg,#ffffff 0%,#fffde7 50%,#fff9c4 100%);min-height:100vh;}
+
+.shell{width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;padding-bottom:100px;}
+
+/* ── Header ── */
+.profile-header{position:relative;padding:0 0 24px;}
+.cover-bg{height:160px;background:linear-gradient(135deg,#f5c518,#ffe566);position:relative;overflow:hidden;}
+.cover-pattern{position:absolute;inset:0;opacity:.15;background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:20px 20px;}
+.header-actions{position:absolute;top:14px;right:16px;display:flex;gap:8px;z-index:5;}
+.header-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.3);backdrop-filter:blur(10px);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.header-btn svg{width:18px;height:18px;stroke:#fff;}
+
+.avatar-wrap{position:absolute;bottom:-44px;left:50%;transform:translateX(-50%);z-index:5;}
+.avatar-ring{width:92px;height:92px;border-radius:50%;border:4px solid #fff;box-shadow:0 4px 20px rgba(245,197,24,.3);overflow:hidden;background:#fff;cursor:pointer;position:relative;}
+.avatar-ring img{width:100%;height:100%;object-fit:cover;}
+.avatar-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:#fff;}
+.avatar-edit{position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:#f5c518;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:12px;}
+
+.profile-name-wrap{margin-top:56px;text-align:center;padding:0 20px;}
+.profile-name{font-size:22px;font-weight:800;color:#1a1a1a;}
+.profile-sub{font-size:13px;color:#aaa;margin-top:4px;}
+.profile-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px;}
+.ptag{background:linear-gradient(135deg,#fffde7,#fff9c4);border:1px solid rgba(245,197,24,.3);border-radius:20px;padding:5px 12px;font-size:12px;color:#666;font-weight:500;}
+
+.completion-wrap{margin:16px 20px 0;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.completion-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.completion-label{font-size:12px;font-weight:700;color:#1a1a1a;}
+.completion-pct{font-size:12px;font-weight:700;color:#f5c518;}
+.completion-bar{height:6px;background:#f5f5f5;border-radius:3px;overflow:hidden;}
+.completion-fill{height:100%;background:linear-gradient(90deg,#f5c518,#ffe566);border-radius:3px;transition:width .5s ease;}
+
+/* ── Sections ── */
+.section{margin:16px 16px 0;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.05);}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;}
+.section-title-row{display:flex;align-items:center;gap:8px;}
+.section-icon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#f5c518,#ffe566);display:flex;align-items:center;justify-content:center;}
+.section-icon svg{width:16px;height:16px;stroke:#1a1a1a;}
+.section-label{font-size:15px;font-weight:700;color:#1a1a1a;}
+.edit-btn{padding:6px 14px;border:1.5px solid rgba(245,197,24,.4);border-radius:20px;background:none;font-size:12px;font-weight:600;color:#f5c518;cursor:pointer;transition:.15s;}
+.edit-btn:active{background:rgba(245,197,24,.08);}
+
+/* ── Info rows ── */
+.info-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid rgba(245,197,24,.08);}
+.info-icon{font-size:18px;flex-shrink:0;width:28px;text-align:center;}
+.info-content{flex:1;}
+.info-label{font-size:10px;font-weight:700;color:#aaa;letter-spacing:.4px;}
+.info-value{font-size:14px;font-weight:600;color:#1a1a1a;margin-top:1px;}
+.info-value.empty{color:#ccc;font-weight:400;}
+
+/* ── Photos grid ── */
+.photos-section{padding:0 16px 16px;}
+.photos-grid-edit{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.photo-slot{aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;cursor:pointer;background:#f9f9f9;border:1.5px dashed #eee;display:flex;align-items:center;justify-content:center;transition:.2s;}
+.photo-slot:hover{border-color:#f5c518;}
+.photo-slot img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-slot .add-icon{font-size:22px;color:#ddd;}
+.photo-slot .remove-btn{position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;z-index:2;}
+.photo-slot .main-badge{position:absolute;bottom:5px;left:5px;background:#f5c518;color:#1a1a1a;font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;}
+
+/* ── Edit modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal-sheet{background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:0 0 30px;max-height:90vh;overflow-y:auto;}
+.modal-handle{width:36px;height:4px;background:#eee;border-radius:2px;margin:12px auto 0;}
+.modal-title{font-size:16px;font-weight:700;color:#1a1a1a;text-align:center;padding:16px 0 8px;}
+.modal-body{padding:0 20px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:11px;font-weight:700;color:#aaa;letter-spacing:.4px;margin-bottom:6px;}
+.form-group input,
+.form-group select,
+.form-group textarea{width:100%;padding:12px 14px;border:1.5px solid #eee;border-radius:12px;font-size:15px;color:#1a1a1a;background:#fafafa;outline:none;transition:.2s;font-family:inherit;}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{border-color:#f5c518;background:#fff;box-shadow:0 0 0 3px rgba(245,197,24,.1);}
+.form-group textarea{resize:none;height:90px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-actions{display:flex;gap:10px;padding:16px 20px 0;}
+.btn-cancel{flex:1;padding:13px;border:1.5px solid #eee;border-radius:12px;background:#fff;font-size:15px;font-weight:600;color:#999;cursor:pointer;}
+.btn-save{flex:2;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#f5c518,#ffe566);font-size:15px;font-weight:700;color:#1a1a1a;cursor:pointer;box-shadow:0 4px 12px rgba(245,197,24,.35);}
+.btn-save:active{transform:scale(.98);}
+
+/* ── Settings items ── */
+.settings-item{display:flex;align-items:center;gap:14px;padding:14px 18px;border-top:1px solid rgba(245,197,24,.08);cursor:pointer;transition:background .15s;}
+.settings-item:active{background:rgba(245,197,24,.05);}
+.settings-item-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.settings-item-icon svg{width:18px;height:18px;}
+.settings-item-label{flex:1;font-size:14px;font-weight:600;color:#1a1a1a;}
+.settings-item-arrow{color:#ddd;font-size:16px;}
+.settings-item.danger .settings-item-label{color:#f87171;}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:400;white-space:nowrap;}
+
+/* ── Navbar ── */
+.navbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;padding:10px 0 20px;border-top:1px solid rgba(0,0,0,.06);background:rgba(255,255,255,.92);backdrop-filter:blur(20px);z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;text-decoration:none;}
+.nav-item svg{width:24px;height:24px;stroke:#ccc;}
+.nav-item.active svg{stroke:#f5c518;}
+.nav-label{font-size:10px;color:#ccc;font-weight:600;}
+.nav-item.active .nav-label{color:#f5c518;}
+
+/* ── Spinner ── */
+.spinner{width:36px;height:36px;border:3px solid #eee;border-top-color:#f5c518;border-radius:50%;animation:spin 1s linear infinite;margin:40px auto;display:block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Header -->
+  <div class="profile-header">
+    <div class="cover-bg">
+      <div class="cover-pattern"></div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="openEditModal('infos')">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="header-btn" onclick="openEditModal('settings')">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="avatar-wrap" onclick="pickAvatar()">
+      <div class="avatar-ring" id="avatar-ring">
+        <div class="avatar-ph" id="avatar-ph" style="background:#f5c518;">?</div>
+      </div>
+      <div class="avatar-edit">✏️</div>
+    </div>
+  </div>
+
+  <div class="profile-name-wrap">
+    <div class="profile-name" id="profile-name">Chargement...</div>
+    <div class="profile-sub"  id="profile-sub"></div>
+    <div class="profile-tags" id="profile-tags"></div>
+  </div>
+
+  <!-- Complétion -->
+  <div class="completion-wrap">
+    <div class="completion-top">
+      <div class="completion-label">Complétion du profil</div>
+      <div class="completion-pct" id="completion-pct">0%</div>
+    </div>
+    <div class="completion-bar">
+      <div class="completion-fill" id="completion-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Photos -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title-row">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="section-label">Mes photos</div>
+      </div>
+      <button class="edit-btn" onclick="openEditModal('photos')">Modifier</button>
+    </div>
+    <div class="photos-section">
+      <div class="photos-grid-edit" id="photos-preview"></div>
+    </div>
+  </div>
+
+  <!-- Infos perso -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title-row">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        <div class="section-label">Informations</div>
+      </div>
+      <button class="edit-btn" onclick="openEditModal('infos')">Modifier</button>
+    </div>
+    <div id="infos-rows"></div>
+  </div>
+
+  <!-- À propos -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title-row">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="section-label">À propos de moi</div>
+      </div>
+      <button class="edit-btn" onclick="openEditModal('description')">Modifier</button>
+    </div>
+    <div class="info-row" style="border-top:none;">
+      <div class="info-content">
+        <div class="info-value" id="desc-text" style="font-weight:400;line-height:1.6;font-size:14px;color:#333;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paramètres -->
+  <div class="section" style="margin-bottom:16px;">
+    <div class="section-header">
+      <div class="section-title-row">
+        <div class="section-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div class="section-label">Paramètres</div>
+      </div>
+    </div>
+    <div class="settings-item" onclick="openEditModal('password')">
+      <div class="settings-item-icon" style="background:#fffde7;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="settings-item-label">Changer le mot de passe</div>
+      <div class="settings-item-arrow">›</div>
+    </div>
+    <div class="settings-item" onclick="openEditModal('preferences')">
+      <div class="settings-item-icon" style="background:#fffde7;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f5c518" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <div class="settings-item-label">Préférences de recherche</div>
+      <div class="settings-item-arrow">›</div>
+    </div>
+    <div class="settings-item danger" onclick="doLogout()">
+      <div class="settings-item-icon" style="background:#fff5f5;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </div>
+      <div class="settings-item-label">Se déconnecter</div>
+      <div class="settings-item-arrow">›</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="nav-item" href="discover.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    <span class="nav-label">Découvrir</span>
+  </a>
+  <a class="nav-item" href="matches.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span class="nav-label">Matchs</span>
+  </a>
+  <a class="nav-item" href="messages.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span class="nav-label">Messages</span>
+  </a>
+  <a class="nav-item active" href="profile.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span class="nav-label">Profil</span>
+  </a>
+</nav>
+
+<!-- Modal édition -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-sheet" id="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-body"  id="modal-body"></div>
+  </div>
+</div>
+
+<input type="file" id="avatar-input"  accept="image/*" style="display:none" onchange="handleAvatarUpload(this)"/>
+<input type="file" id="photo-input"   accept="image/*" style="display:none" onchange="handlePhotoUpload(this)"/>
+
+<script>
+const API = "http://161.97.172.249:8000";
+let me = JSON.parse(localStorage.getItem('me'));
+if(!me) window.location.href = 'index.html';
+
+let editPhotos       = [];
+let currentPhotoSlot = 0;
+const COLORS = ['#f5c518','#e8547a','#9b59b6','#3498db','#2ecc71','#e67e22'];
+function colorFor(id){ return COLORS[Math.abs(parseInt(id||0)) % COLORS.length]; }
+
+// ════════════════════════════════
+// RENDER PROFIL
+// ════════════════════════════════
+function renderProfile(){
+  const photos = me.photos || [];
+
+  // Avatar
+  const ring = document.getElementById('avatar-ring');
+  const ph   = document.getElementById('avatar-ph');
+  if(photos[0]){
+    ring.innerHTML = `<img src="${photos[0]}" alt=""/>`;
+  } else {
+    const init = ((me.prenom||'?')[0]+((me.nom||'?')[0])).toUpperCase();
+    ph.textContent  = init;
+    ph.style.background = colorFor(me.id);
+  }
+
+  // Nom
+  document.getElementById('profile-name').textContent =
+    `${me.prenom||''} ${me.nom||''}`.trim() || 'Mon profil';
+  document.getElementById('profile-sub').textContent =
+    [me.ville, me.pays].filter(Boolean).join(', ') || 'Localisation non renseignée';
+
+  // Tags
+  const tags = [me.religion, me.profession, me.niveau_etudes].filter(Boolean);
+  document.getElementById('profile-tags').innerHTML =
+    tags.map(t=>`<div class="ptag">${t}</div>`).join('');
+
+  // Photos preview
+  const grid = document.getElementById('photos-preview');
+  grid.innerHTML = '';
+  for(let i=0;i<6;i++){
+    const slot = document.createElement('div');
+    slot.className = 'photo-slot';
+    if(photos[i]){
+      slot.innerHTML = `
+        <img src="${photos[i]}" alt=""/>
+        ${i===0?`<div class="main-badge">Principale</div>`:''}`;
+    } else {
+      slot.innerHTML = `<span class="add-icon">+</span>`;
+      slot.onclick = () => openEditModal('photos');
+    }
+    grid.appendChild(slot);
+  }
+
+  // Infos rows
+  const infos = [
+    {icon:'🎂', label:'Âge',        value: me.age ? me.age+' ans' : null},
+    {icon:'⚧',  label:'Genre',      value: me.genre},
+    {icon:'📍', label:'Ville',      value: me.ville},
+    {icon:'🌍', label:'Pays',       value: me.pays},
+    {icon:'💼', label:'Profession', value: me.profession},
+    {icon:'🕌', label:'Religion',   value: me.religion},
+    {icon:'🎓', label:'Études',     value: me.niveau_etudes},
+    {icon:'🔍', label:'Recherche',  value: me.recherche},
+  ];
+  document.getElementById('infos-rows').innerHTML = infos.map(info=>`
+    <div class="info-row">
+      <div class="info-icon">${info.icon}</div>
+      <div class="info-content">
+        <div class="info-label">${info.label.toUpperCase()}</div>
+        <div class="info-value ${!info.value?'empty':''}">${info.value||'Non renseigné'}</div>
+      </div>
+    </div>`).join('');
+
+  // Description
+  document.getElementById('desc-text').textContent =
+    me.description || 'Aucune description pour l\'instant. Parlez de vous !';
+  if(!me.description)
+    document.getElementById('desc-text').style.color='#ccc';
+
+  // Complétion
+  const fields = [me.prenom, me.nom, me.age, me.ville, me.pays, me.profession,
+                  me.religion, me.niveau_etudes, me.description, me.genre,
+                  photos.length>0 ? 'ok' : null, photos.length>1 ? 'ok' : null];
+  const filled = fields.filter(Boolean).length;
+  const pct    = Math.round((filled/fields.length)*100);
+  document.getElementById('completion-pct').textContent  = pct+'%';
+  document.getElementById('completion-fill').style.width = pct+'%';
+}
+
+// ════════════════════════════════
+// AVATAR
+// ════════════════════════════════
+function pickAvatar(){ document.getElementById('avatar-input').click(); }
+
+async function handleAvatarUpload(input){
+  if(!input.files[0]) return;
+  const fd = new FormData(); fd.append('file', input.files[0]);
+  try{
+    const res  = await fetch(`${API}/upload-photo`, {method:'POST', body:fd});
+    const data = await res.json();
+    const photos = [...(me.photos||[])];
+    photos[0] = data.url;
+    await saveProfile({photos});
+    showToast('Photo principale mise à jour ✓');
+  }catch(e){ showToast('Erreur upload'); }
+  input.value='';
+}
+
+// ════════════════════════════════
+// MODAL
+// ════════════════════════════════
+function openEditModal(type){
+  const overlay = document.getElementById('modal-overlay');
+  const title   = document.getElementById('modal-title');
+  const body    = document.getElementById('modal-body');
+  overlay.classList.add('show');
+
+  if(type==='infos'){
+    title.textContent = 'Modifier mes infos';
+    body.innerHTML = `
+      <div class="row2">
+        <div class="form-group"><label>PRÉNOM</label>
+          <input id="e-prenom" value="${me.prenom||''}"/></div>
+        <div class="form-group"><label>NOM</label>
+          <input id="e-nom" value="${me.nom||''}"/></div>
+      </div>
+      <div class="row2">
+        <div class="form-group"><label>ÂGE</label>
+          <input type="number" id="e-age" value="${me.age||''}" min="18" max="80"/></div>
+        <div class="form-group"><label>GENRE</label>
+          <select id="e-genre">
+            <option value="">Choisir</option>
+            <option value="homme" ${me.genre==='homme'?'selected':''}>Homme</option>
+            <option value="femme" ${me.genre==='femme'?'selected':''}>Femme</option>
+          </select></div>
+      </div>
+      <div class="row2">
+        <div class="form-group"><label>VILLE</label>
+          <input id="e-ville" value="${me.ville||''}"/></div>
+        <div class="form-group"><label>PAYS</label>
+          <input id="e-pays" value="${me.pays||''}"/></div>
+      </div>
+      <div class="form-group"><label>PROFESSION</label>
+        <input id="e-profession" value="${me.profession||''}"/></div>
+      <div class="row2">
+        <div class="form-group"><label>RELIGION</label>
+          <select id="e-religion">
+            <option value="">Choisir</option>
+            <option value="Islam"         ${me.religion==='Islam'?'selected':''}>Islam</option>
+            <option value="Christianisme" ${me.religion==='Christianisme'?'selected':''}>Christianisme</option>
+            <option value="Judaïsme"      ${me.religion==='Judaïsme'?'selected':''}>Judaïsme</option>
+            <option value="Autre"         ${me.religion==='Autre'?'selected':''}>Autre</option>
+          </select></div>
+        <div class="form-group"><label>ÉTUDES</label>
+          <select id="e-etudes">
+            <option value="">Choisir</option>
+            <option value="Bac"    ${me.niveau_etudes==='Bac'?'selected':''}>Bac</option>
+            <option value="Bac+2"  ${me.niveau_etudes==='Bac+2'?'selected':''}>Bac+2</option>
+            <option value="Bac+3"  ${me.niveau_etudes==='Bac+3'?'selected':''}>Bac+3</option>
+            <option value="Bac+5"  ${me.niveau_etudes==='Bac+5'?'selected':''}>Bac+5</option>
+            <option value="Doctorat" ${me.niveau_etudes==='Doctorat'?'selected':''}>Doctorat</option>
+          </select></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+        <button class="btn-save"   onclick="saveInfos()">Enregistrer</button>
+      </div>`;
+  }
+else if(type==='settings'){
+    title.textContent = 'Paramètres du compte';
+    body.innerHTML = `
+      <p style="font-size:13px;color:#aaa;text-align:center;margin-bottom:14px;">
+        Choisissez une option à modifier :
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn-save" style="background:#fff; border:1.5px solid #eee; color:#1a1a1a; box-shadow:none;" onclick="openEditModal('password')"> Changer le mot de passe</button>
+        <button class="btn-save" style="background:#fff; border:1.5px solid #eee; color:#1a1a1a; box-shadow:none;" onclick="openEditModal('preferences')"> Préférences de recherche</button>
+      </div>
+      <div class="modal-actions" style="padding:16px 0 0;">
+        <button class="btn-cancel" style="width:100%;" onclick="closeModal()">Fermer</button>
+      </div>`;
+  }
+  else if(type==='description'){
+    title.textContent = 'Ma description';
+    body.innerHTML = `
+      <div class="form-group">
+        <label>À PROPOS DE MOI</label>
+        <textarea id="e-desc" style="height:140px;">${me.description||''}</textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+        <button class="btn-save"   onclick="saveDescription()">Enregistrer</button>
+      </div>`;
+  }
+
+  else if(type==='photos'){
+    title.textContent = 'Mes photos';
+    editPhotos = [...(me.photos||[])];
+    body.innerHTML = `
+      <p style="font-size:13px;color:#aaa;text-align:center;margin-bottom:14px;">
+        La première photo est votre photo principale
+      </p>
+      <div id="edit-photos-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+        <button class="btn-save"   onclick="savePhotos()">Enregistrer</button>
+      </div>`;
+    renderEditPhotos();
+  }
+
+  else if(type==='password'){
+    title.textContent = 'Changer le mot de passe';
+    body.innerHTML = `
+      <div class="form-group"><label>ANCIEN MOT DE PASSE</label>
+        <input type="password" id="e-oldpw" placeholder="••••••••"/></div>
+      <div class="form-group"><label>NOUVEAU MOT DE PASSE</label>
+        <input type="password" id="e-newpw" placeholder="Minimum 6 caractères"/></div>
+      <div class="form-group"><label>CONFIRMER</label>
+        <input type="password" id="e-confirmpw" placeholder="••••••••"/></div>
+      <div id="pw-error" style="color:#f87171;font-size:13px;margin-bottom:8px;display:none;"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+        <button class="btn-save"   onclick="savePassword()">Enregistrer</button>
+      </div>`;
+  }
+
+  else if(type==='preferences'){
+    title.textContent = 'Préférences de recherche';
+    body.innerHTML = `
+      <div class="form-group"><label>JE RECHERCHE</label>
+        <select id="e-recherche">
+          
+          <option value="homme" ${me.recherche==='homme'?'selected':''}>Un homme</option>
+          <option value="femme" ${me.recherche==='femme'?'selected':''}>Une femme</option>
+          
+        </select></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+        <button class="btn-save"   onclick="savePreferences()">Enregistrer</button>
+      </div>`;
+  }
+}
+
+function closeModal(event){
+  if(event && event.target !== document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+// ════════════════════════════════
+// PHOTOS EDIT
+// ════════════════════════════════
+function renderEditPhotos(){
+  const grid = document.getElementById('edit-photos-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  for(let i=0;i<6;i++){
+    const slot=document.createElement('div');
+    slot.className='photo-slot';
+    slot.style.cssText='aspect-ratio:1;border-radius:12px;overflow:hidden;position:relative;cursor:pointer;background:#f9f9f9;border:1.5px dashed #eee;display:flex;align-items:center;justify-content:center;';
+    if(editPhotos[i]){
+      slot.innerHTML=`
+        <img src="${editPhotos[i]}" style="width:100%;height:100%;object-fit:cover;"/>
+        ${i===0?`<div style="position:absolute;bottom:5px;left:5px;background:#f5c518;color:#1a1a1a;font-size:9px;font-weight:800;padding:2px 6px;border-radius:6px;">Principale</div>`:''}
+        <button onclick="removeEditPhoto(event,${i})" style="position:absolute;top:5px;right:5px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;">×</button>`;
+    } else {
+      slot.innerHTML=`<span style="font-size:22px;color:#ddd;">+</span>`;
+      slot.onclick=()=>pickEditPhoto(i);
+    }
+    grid.appendChild(slot);
+  }
+}
+function pickEditPhoto(idx){
+  currentPhotoSlot=idx;
+  document.getElementById('photo-input').click();
+}
+async function handlePhotoUpload(input){
+  if(!input.files[0]) return;
+  const fd=new FormData(); fd.append('file',input.files[0]);
+  try{
+    const res=await fetch(`${API}/upload-photo`,{method:'POST',body:fd});
+    const data=await res.json();
+    editPhotos[currentPhotoSlot]=data.url;
+    renderEditPhotos();
+  }catch(e){ showToast('Erreur upload'); }
+  input.value='';
+}
+function removeEditPhoto(event, idx){
+  event.stopPropagation();
+  editPhotos.splice(idx,1);
+  renderEditPhotos();
+}
+
+// ════════════════════════════════
+// SAVE
+// ════════════════════════════════
+async function saveProfile(fields){
+  try{
+    const res  = await fetch(`${API}/update-profile`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({user_id:me.id, ...fields})
+    });
+    const data = await res.json();
+    if(data.ok){
+      me = {...me, ...fields, ...data.user};
+      localStorage.setItem('me', JSON.stringify(me));
+      renderProfile();
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+async function saveInfos(){
+  const fields={
+    prenom:        document.getElementById('e-prenom').value.trim(),
+    nom:           document.getElementById('e-nom').value.trim(),
+    age:           parseInt(document.getElementById('e-age').value)||null,
+    genre:         document.getElementById('e-genre').value,
+    ville:         document.getElementById('e-ville').value.trim(),
+    pays:          document.getElementById('e-pays').value.trim(),
+    profession:    document.getElementById('e-profession').value.trim(),
+    religion:      document.getElementById('e-religion').value,
+    niveau_etudes: document.getElementById('e-etudes').value,
+  };
+  const ok = await saveProfile(fields);
+  if(ok){ closeModal(); showToast('Profil mis à jour ✓'); }
+  else    showToast('Erreur lors de la mise à jour');
+}
+
+async function saveDescription(){
+  const desc = document.getElementById('e-desc').value.trim();
+  const ok   = await saveProfile({description:desc});
+  if(ok){ closeModal(); showToast('Description mise à jour ✓'); }
+}
+
+async function savePhotos(){
+  const photos = editPhotos.filter(Boolean);
+  if(!photos.length){ showToast('Ajoutez au moins une photo'); return; }
+  const ok = await saveProfile({photos});
+  if(ok){ closeModal(); showToast('Photos mises à jour ✓'); }
+}
+
+async function savePassword(){
+  const oldpw  = document.getElementById('e-oldpw').value.trim();
+  const newpw  = document.getElementById('e-newpw').value.trim();
+  const confirmpw = document.getElementById('e-confirmpw').value.trim();
+  const errEl  = document.getElementById('pw-error');
+  if(!oldpw||!newpw){ errEl.textContent='Remplissez tous les champs'; errEl.style.display='block'; return; }
+  if(newpw.length<6){ errEl.textContent='Minimum 6 caractères'; errEl.style.display='block'; return; }
+  if(newpw!==confirmpw){ errEl.textContent='Les mots de passe ne correspondent pas'; errEl.style.display='block'; return; }
+  try{
+    const res  = await fetch(`${API}/update-password`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({user_id:me.id, old_password:oldpw, new_password:newpw})
+    });
+    const data = await res.json();
+    if(data.ok){ closeModal(); showToast('Mot de passe mis à jour ✓'); }
+    else{ errEl.textContent=data.msg||'Ancien mot de passe incorrect'; errEl.style.display='block'; }
+  }catch(e){ errEl.textContent='Erreur réseau'; errEl.style.display='block'; }
+}
+
+async function savePreferences(){
+  const recherche = document.getElementById('e-recherche').value;
+  const ok = await saveProfile({recherche});
+  if(ok){ closeModal(); showToast('Préférences mises à jour ✓'); }
+}
+
+// ════════════════════════════════
+// LOGOUT
+// ════════════════════════════════
+function doLogout(){
+  if(!confirm('Se déconnecter ?')) return;
+  localStorage.clear();
+  window.location.href='index.html';
+}
+
+function showToast(msg){
+  document.getElementById('toast-el')?.remove();
+  const t=document.createElement('div'); t.id='toast-el';
+  t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+// ── Init ──
+renderProfile();
+</script>
+</body>
+</html>

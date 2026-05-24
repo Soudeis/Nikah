@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NikahConnect</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;}
+body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(135deg,#ffffff 0%,#fffde7 50%,#fff9c4 100%);}
+
+.container{width:100%;max-width:420px;padding:20px;}
+
+.logo-wrap{text-align:center;margin-bottom:36px;}
+.logo-icon{width:72px;height:72px;background:linear-gradient(135deg,#f5c518,#ffe066);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 4px 20px rgba(245,197,24,.35);}
+.logo-icon svg{width:36px;height:36px;}
+.logo-wrap h1{font-size:26px;font-weight:700;color:#1a1a1a;letter-spacing:-.5px;}
+.logo-wrap p{font-size:13px;color:#888;margin-top:4px;}
+
+.card{background:#fff;border-radius:24px;padding:28px 24px;box-shadow:0 8px 40px rgba(0,0,0,.08);}
+
+.tabs{display:flex;gap:4px;background:#f5f5f5;border-radius:12px;padding:4px;margin-bottom:24px;}
+.tab{flex:1;padding:10px;border:none;background:none;border-radius:9px;font-size:14px;font-weight:600;color:#999;cursor:pointer;transition:.2s;}
+.tab.active{background:#fff;color:#1a1a1a;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:6px;letter-spacing:.3px;}
+.form-group input,
+.form-group select,
+.form-group textarea{width:100%;padding:12px 14px;border:1.5px solid #eee;border-radius:12px;font-size:15px;color:#1a1a1a;background:#fafafa;outline:none;transition:.2s;font-family:inherit;}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{border-color:#f5c518;background:#fff;box-shadow:0 0 0 3px rgba(245,197,24,.12);}
+.form-group textarea{resize:none;height:80px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+.btn-main{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(135deg,#f5c518,#ffe066);color:#1a1a1a;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(245,197,24,.4);transition:.2s;margin-top:8px;}
+.btn-main:active{transform:scale(.98);}
+.btn-main:disabled{opacity:.5;cursor:not-allowed;}
+
+.forgot{text-align:right;margin-bottom:16px;}
+.forgot a{font-size:12px;color:#f5c518;font-weight:600;text-decoration:none;}
+
+.step-indicator{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:20px;}
+.step-dot{width:8px;height:8px;border-radius:50%;background:#eee;transition:.3s;}
+.step-dot.active{background:#f5c518;width:20px;border-radius:4px;}
+.step-dot.done{background:#f5c518;}
+
+.step{display:none;}
+.step.active{display:block;}
+
+.step-title{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+.step-sub{font-size:12px;color:#aaa;margin-bottom:20px;}
+
+.photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;}
+.photo-slot{aspect-ratio:1;border-radius:12px;border:2px dashed #eee;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;background:#fafafa;transition:.2s;}
+.photo-slot:hover{border-color:#f5c518;}
+.photo-slot img{width:100%;height:100%;object-fit:cover;}
+.photo-slot .add-icon{font-size:24px;color:#ccc;}
+.photo-slot .remove-btn{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;}
+
+.nav-btns{display:flex;gap:10px;margin-top:16px;}
+.btn-back{flex:1;padding:13px;border:1.5px solid #eee;border-radius:14px;background:#fff;color:#555;font-size:15px;font-weight:600;cursor:pointer;}
+.btn-next{flex:2;padding:13px;border:none;border-radius:14px;background:linear-gradient(135deg,#f5c518,#ffe066);color:#1a1a1a;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(245,197,24,.35);}
+.btn-next:active{transform:scale(.98);}
+.btn-next:disabled{opacity:.5;cursor:not-allowed;}
+
+.error-msg{background:#fff3cd;border:1px solid #f5c518;color:#856404;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;display:none;}
+.error-msg.show{display:block;}
+
+/* ── Code vérification ── */
+.verify-wrap{text-align:center;padding:8px 0;}
+.verify-icon{width:64px;height:64px;background:linear-gradient(135deg,#f5c518,#ffe066);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;}
+.verify-title{font-size:17px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
+.verify-sub{font-size:13px;color:#aaa;margin-bottom:24px;line-height:1.5;}
+.code-inputs{display:flex;gap:8px;justify-content:center;margin-bottom:20px;}
+.code-input{width:46px;height:56px;border:1.5px solid #eee;border-radius:12px;font-size:22px;font-weight:700;text-align:center;outline:none;transition:.2s;color:#1a1a1a;background:#fafafa;}
+.code-input:focus{border-color:#f5c518;background:#fff;box-shadow:0 0 0 3px rgba(245,197,24,.12);}
+.resend-link{font-size:13px;color:#aaa;margin-top:8px;}
+.resend-link a{color:#f5c518;font-weight:600;cursor:pointer;text-decoration:none;}
+
+/* ── Modal reset ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:20px;padding:28px 24px;width:90%;max-width:360px;text-align:center;}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:8px;}
+.modal p{font-size:14px;color:#888;margin-bottom:20px;}
+.modal .code-inputs{margin-bottom:20px;}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo-wrap">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+    </div>
+    <h1>NikahConnect</h1>
+    <p>Trouvez votre moitié pour la vie</p>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Connexion</button>
+      <button class="tab"        onclick="switchTab('register')">Inscription</button>
+    </div>
+
+    <!-- ══ LOGIN ══ -->
+    <div id="login-form">
+      <div class="error-msg" id="login-error"></div>
+      <div class="form-group">
+        <label>EMAIL</label>
+        <input type="email" id="login-email" placeholder="votre@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>MOT DE PASSE</label>
+        <input type="password" id="login-password" placeholder="••••••••"/>
+      </div>
+      <div class="forgot"><a href="#" onclick="openReset()">Mot de passe oublié ?</a></div>
+      <button class="btn-main" id="login-btn" onclick="doLogin()">Se connecter</button>
+    </div>
+
+    <!-- ══ REGISTER ══ -->
+    <div id="register-form" style="display:none;">
+      <div class="step-indicator" id="step-indicator"></div>
+      <div class="error-msg" id="reg-error"></div>
+
+      <!-- Step 1 : Compte -->
+      <div class="step active" id="step-1">
+        <!-- Dans step-1, avant les nav-btns -->
+<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;padding:12px;background:#fffde7;border-radius:12px;border:1px solid rgba(245,197,24,.3);">
+  <input type="checkbox" id="accept-terms" style="margin-top:3px;width:18px;height:18px;accent-color:#f5c518;cursor:pointer;flex-shrink:0;"/>
+  <label for="accept-terms" style="font-size:13px;color:#555;cursor:pointer;line-height:1.5;">
+    J'accepte les 
+    <a href="#" onclick="showTerms(event)" style="color:#f5c518;font-weight:700;text-decoration:none;">conditions d'utilisation</a> 
+    et la 
+    <a href="#" onclick="showTerms(event)" style="color:#f5c518;font-weight:700;text-decoration:none;">politique de confidentialité</a> 
+    de NikahConnect
+  </label>
+</div>
+        <div class="step-title">Créer votre compte</div>
+        <div class="step-sub">Informations de connexion</div>
+        <div class="row2">
+          <div class="form-group"><label>PRÉNOM</label><input type="text" id="reg-prenom" placeholder="Prénom"/></div>
+          <div class="form-group"><label>NOM</label><input type="text" id="reg-nom" placeholder="Nom"/></div>
+        </div>
+        <div class="form-group"><label>EMAIL</label><input type="email" id="reg-email" placeholder="votre@email.com"/></div>
+        <div class="form-group"><label>MOT DE PASSE</label><input type="password" id="reg-password" placeholder="Minimum 6 caractères"/></div>
+        <div class="nav-btns">
+          <button class="btn-next" onclick="nextStep(1)">Continuer →</button>
+        </div>
+      </div>
+
+      <!-- Step 2 : Profil -->
+      <div class="step" id="step-2">
+        <div class="step-title">Votre profil</div>
+        <div class="step-sub">Ces infos seront visibles par les autres</div>
+        <div class="row2">
+          <div class="form-group"><label>ÂGE</label><input type="number" id="reg-age" placeholder="25" min="18" max="80"/></div>
+          <div class="form-group"><label>GENRE</label>
+            <select id="reg-genre">
+              <option value="">Choisir</option>
+              <option value="homme">Homme</option>
+              <option value="femme">Femme</option>
+            </select>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="form-group"><label>VILLE</label><input type="text" id="reg-ville" placeholder="Paris"/></div>
+          <div class="form-group"><label>PAYS</label><input type="text" id="reg-pays" placeholder="France"/></div>
+        </div>
+        <div class="form-group"><label>JE RECHERCHE</label>
+          <select id="reg-recherche">
+            <option value="">Choisir</option>
+            <option value="homme">Un homme</option>
+            <option value="femme">Une femme</option>
+
+          </select>
+        </div>
+        <div class="nav-btns">
+          <button class="btn-back" onclick="prevStep(2)">← Retour</button>
+          <button class="btn-next" onclick="nextStep(2)">Continuer →</button>
+        </div>
+      </div>
+
+      <!-- Step 3 : Détails -->
+      <div class="step" id="step-3">
+        <div class="step-title">En savoir plus</div>
+        <div class="step-sub">Aidez les autres à vous connaître</div>
+        <div class="form-group"><label>PROFESSION</label><input type="text" id="reg-profession" placeholder="Ingénieur, Médecin..."/></div>
+        <div class="row2">
+          <div class="form-group"><label>RELIGION</label>
+            <select id="reg-religion">
+              <option value="">Choisir</option>
+              <option value="Islam">Islam</option>
+              <option value="Christianisme">Christianisme</option>
+              <option value="Judaïsme">Judaïsme</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+          <div class="form-group"><label>ÉTUDES</label>
+            <select id="reg-etudes">
+              <option value="">Choisir</option>
+              <option value="Bac">Bac</option>
+              <option value="Bac+2">Bac+2</option>
+              <option value="Bac+3">Bac+3</option>
+              <option value="Bac+5">Bac+5</option>
+              <option value="Doctorat">Doctorat</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>DESCRIPTION</label>
+          <textarea id="reg-description" placeholder="Décrivez-vous en quelques mots..."></textarea>
+        </div>
+        <div class="nav-btns">
+          <button class="btn-back" onclick="prevStep(3)">← Retour</button>
+          <button class="btn-next" onclick="nextStep(3)">Continuer →</button>
+        </div>
+      </div>
+
+      <!-- Step 4 : Photos -->
+      <div class="step" id="step-4">
+        <div class="step-title">Vos photos</div>
+        <div class="step-sub">Ajoutez au moins une photo</div>
+        <div class="photos-grid" id="photos-grid"></div>
+        <div class="nav-btns" style="margin-top:20px;">
+          <button class="btn-back" onclick="prevStep(4)">← Retour</button>
+          <button class="btn-next" id="btn-send-code" onclick="goToVerify()">Continuer →</button>
+        </div>
+      </div>
+
+      <!-- Step 5 : Vérification email ── NOUVEAU -->
+      <div class="step" id="step-5">
+        <div class="verify-wrap">
+          <div class="verify-icon">📧</div>
+          <div class="verify-title">Vérifiez votre email</div>
+          <div class="verify-sub" id="verify-sub-text">
+            Un code à 6 chiffres a été envoyé à<br/><strong id="verify-email-display"></strong>
+          </div>
+          <div class="code-inputs" id="code-inputs-reg">
+            <input class="code-input" maxlength="1" oninput="codeNav(this,0,'reg')"/>
+            <input class="code-input" maxlength="1" oninput="codeNav(this,1,'reg')"/>
+            <input class="code-input" maxlength="1" oninput="codeNav(this,2,'reg')"/>
+            <input class="code-input" maxlength="1" oninput="codeNav(this,3,'reg')"/>
+            <input class="code-input" maxlength="1" oninput="codeNav(this,4,'reg')"/>
+            <input class="code-input" maxlength="1" oninput="codeNav(this,5,'reg')"/>
+          </div>
+          <button class="btn-main" id="btn-verify-reg" onclick="verifyAndRegister()">Créer mon compte ✓</button>
+          <div class="resend-link" style="margin-top:14px;">
+            Pas reçu ? <a onclick="resendCode()">Renvoyer le code</a>
+          </div>
+        </div>
+        <div class="nav-btns" style="margin-top:16px;">
+          <button class="btn-back" onclick="prevStep(5)">← Retour</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal reset password -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal">
+    <h3>Réinitialiser</h3>
+    <p id="reset-modal-text">Entrez votre email pour recevoir un code</p>
+    <div id="reset-step-email">
+      <div class="form-group"><input type="email" id="reset-email" placeholder="votre@email.com"/></div>
+      <button class="btn-main" onclick="sendResetCode()">Envoyer le code</button>
+    </div>
+    <div id="reset-step-code" style="display:none;">
+      <div class="code-inputs">
+        <input class="code-input" maxlength="1" oninput="codeNav(this,0,'reset')"/>
+        <input class="code-input" maxlength="1" oninput="codeNav(this,1,'reset')"/>
+        <input class="code-input" maxlength="1" oninput="codeNav(this,2,'reset')"/>
+        <input class="code-input" maxlength="1" oninput="codeNav(this,3,'reset')"/>
+        <input class="code-input" maxlength="1" oninput="codeNav(this,4,'reset')"/>
+        <input class="code-input" maxlength="1" oninput="codeNav(this,5,'reset')"/>
+      </div>
+      <button class="btn-main" onclick="verifyResetCode()">Vérifier</button>
+    </div>
+    <div id="reset-step-newpw" style="display:none;">
+      <div class="form-group"><input type="password" id="reset-newpw" placeholder="Nouveau mot de passe"/></div>
+      <button class="btn-main" onclick="doResetPassword()">Enregistrer</button>
+    </div>
+    <button onclick="closeReset()" style="margin-top:14px;background:none;border:none;color:#aaa;cursor:pointer;font-size:13px;">Annuler</button>
+  </div>
+</div>
+
+<input type="file" id="photo-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)"/>
+
+<script>
+const API = "http://161.97.172.249:8000";
+const TOTAL_STEPS = 5;
+let currentStep    = 1;
+let uploadedPhotos = [];
+let currentPhotoSlot = 0;
+let regVerifyCode  = null;   // code envoyé par le backend
+let resetCode      = null;
+
+// ════════════════════════════════
+// TABS
+// ════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('login-form').style.display    = tab==='login'    ? 'block':'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'block':'none';
+  if(tab==='register') initStepIndicator();
+}
+
+// ════════════════════════════════
+// STEPS
+// ════════════════════════════════
+function initStepIndicator(){
+  const el = document.getElementById('step-indicator');
+  el.innerHTML = Array.from({length:TOTAL_STEPS},(_,i)=>
+    `<div class="step-dot ${i===0?'active':''}" id="dot-${i+1}"></div>`
+  ).join('');
+}
+function updateDots(){
+  for(let i=1;i<=TOTAL_STEPS;i++){
+    const d=document.getElementById('dot-'+i); if(!d) continue;
+    d.className='step-dot'+(i===currentStep?' active':i<currentStep?' done':'');
+  }
+}
+function showStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step-'+n)?.classList.add('active');
+  currentStep=n; updateDots();
+  document.getElementById('reg-error').classList.remove('show');
+}
+function nextStep(from){
+  if(from===1){
+    const prenom=document.getElementById('reg-prenom').value.trim();
+    const nom   =document.getElementById('reg-nom').value.trim();
+    const email =document.getElementById('reg-email').value.trim();
+    const pw    =document.getElementById('reg-password').value.trim();
+    if(!prenom||!nom||!email||!pw) return showError('reg','Veuillez remplir tous les champs');
+    if(pw.length<6) return showError('reg','Le mot de passe doit faire au moins 6 caractères');
+    if(!/\S+@\S+\.\S+/.test(email)) return showError('reg','Email invalide');
+
+    if(!document.getElementById('accept-terms').checked)
+    return showError('reg','Vous devez accepter les conditions d\'utilisation');
+  }
+  if(from===2){
+    const age  =document.getElementById('reg-age').value;
+    const genre=document.getElementById('reg-genre').value;
+    if(!age||!genre) return showError('reg','Veuillez remplir les champs obligatoires');
+    if(parseInt(age)<18) return showError('reg','Vous devez avoir au moins 18 ans');
+  }
+  if(from===4) initPhotosGrid();
+  showStep(from+1);
+  if(from+1===4) initPhotosGrid();
+}
+function prevStep(from){ showStep(from-1); }
+function showError(form,msg){
+  const el=document.getElementById(form+'-error');
+  el.textContent=msg; el.classList.add('show');
+}
+
+// ════════════════════════════════
+// PHOTOS
+// ════════════════════════════════
+function initPhotosGrid(){
+  const grid=document.getElementById('photos-grid'); grid.innerHTML='';
+  for(let i=0;i<6;i++){
+    const slot=document.createElement('div'); slot.className='photo-slot';
+    if(uploadedPhotos[i]){
+      slot.innerHTML=`<img src="${uploadedPhotos[i]}"/><button class="remove-btn" onclick="removePhoto(event,${i})">×</button>`;
+    } else {
+      slot.innerHTML=`<span class="add-icon">+</span>`;
+      slot.onclick=()=>pickPhoto(i);
+    }
+    grid.appendChild(slot);
+  }
+}
+function pickPhoto(idx){ currentPhotoSlot=idx; document.getElementById('photo-input').click(); }
+async function handlePhotoUpload(input){
+  if(!input.files[0]) return;
+  const fd=new FormData(); fd.append('file',input.files[0]);
+  try{
+    const res=await fetch(`${API}/upload-photo`,{method:'POST',body:fd});
+    const data=await res.json();
+    uploadedPhotos[currentPhotoSlot]=data.url;
+    initPhotosGrid();
+  }catch(e){ alert('Erreur upload photo'); }
+  input.value='';
+}
+function removePhoto(event,idx){ event.stopPropagation(); uploadedPhotos.splice(idx,1); initPhotosGrid(); }
+
+// ════════════════════════════════
+// STEP 5 — ENVOI DU CODE
+// ════════════════════════════════
+async function goToVerify(){
+  const photos=uploadedPhotos.filter(Boolean);
+  if(!photos.length) return showError('reg','Ajoutez au moins une photo');
+
+  const btn=document.getElementById('btn-send-code');
+  btn.disabled=true; btn.textContent='Envoi...';
+
+  const email=document.getElementById('reg-email').value.trim();
+  try{
+    const res  =await fetch(`${API}/send-code?email=${encodeURIComponent(email)}`);
+    const data =await res.json();
+    regVerifyCode=String(data.code);
+    document.getElementById('verify-email-display').textContent=email;
+    // vider les inputs
+    document.querySelectorAll('#code-inputs-reg .code-input').forEach(i=>i.value='');
+    showStep(5);
+  }catch(e){
+    showError('reg','Impossible d\'envoyer le code. Vérifiez votre email.');
+  }
+  btn.disabled=false; btn.textContent='Continuer →';
+}
+
+async function resendCode(){
+  const email=document.getElementById('reg-email').value.trim();
+  try{
+    const res =await fetch(`${API}/send-code?email=${encodeURIComponent(email)}`);
+    const data=await res.json();
+    regVerifyCode=String(data.code);
+    document.querySelectorAll('#code-inputs-reg .code-input').forEach(i=>i.value='');
+    showToastInline('Code renvoyé !');
+  }catch(e){ showToastInline('Erreur envoi'); }
+}
+
+// ════════════════════════════════
+// STEP 5 — VÉRIFICATION + INSCRIPTION
+// ════════════════════════════════
+async function verifyAndRegister(){
+  const inputs =document.querySelectorAll('#code-inputs-reg .code-input');
+  const entered=Array.from(inputs).map(i=>i.value).join('');
+
+  if(entered.length<6) return showError('reg','Entrez le code complet à 6 chiffres');
+
+  if(entered !== regVerifyCode){
+    showError('reg','Code incorrect, vérifiez votre email');
+    inputs.forEach(i=>{ i.value=''; i.style.borderColor='#f87171'; });
+    setTimeout(()=>inputs.forEach(i=>i.style.borderColor=''),1500);
+    inputs[0].focus();
+    return;
+  }
+
+  // Code correct → inscription
+  const btn=document.getElementById('btn-verify-reg');
+  btn.disabled=true; btn.textContent='Création...';
+
+  const body={
+    prenom:        document.getElementById('reg-prenom').value.trim(),
+    nom:           document.getElementById('reg-nom').value.trim(),
+    email:         document.getElementById('reg-email').value.trim(),
+    password:      document.getElementById('reg-password').value.trim(),
+    age:           parseInt(document.getElementById('reg-age').value)||null,
+    genre:         document.getElementById('reg-genre').value,
+    ville:         document.getElementById('reg-ville').value.trim(),
+    pays:          document.getElementById('reg-pays').value.trim(),
+    recherche:     document.getElementById('reg-recherche').value,
+    profession:    document.getElementById('reg-profession').value.trim(),
+    religion:      document.getElementById('reg-religion').value,
+    niveau_etudes: document.getElementById('reg-etudes').value,
+    description:   document.getElementById('reg-description').value.trim(),
+    photos:        uploadedPhotos.filter(Boolean),
+  };
+
+  try{
+    const res =await fetch(`${API}/sign-up`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data=await res.json();
+    if(data.ok){
+      localStorage.setItem('me',JSON.stringify(data.user));
+      window.location.href='discover.html';
+    } else {
+      showError('reg', data.msg||'Erreur lors de la création');
+      btn.disabled=false; btn.textContent='Créer mon compte ✓';
+    }
+  }catch(e){
+    showError('reg','Erreur réseau');
+    btn.disabled=false; btn.textContent='Créer mon compte ✓';
+  }
+}
+
+// ════════════════════════════════
+// LOGIN
+// ════════════════════════════════
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pw   =document.getElementById('login-password').value.trim();
+  if(!email||!pw) return showError('login','Veuillez remplir tous les champs');
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true; btn.textContent='Connexion...';
+  try{
+    const res =await fetch(`${API}/sign-in?email=${encodeURIComponent(email)}&password=${encodeURIComponent(pw)}`);
+    const data=await res.json();
+    if(data.ok){
+      localStorage.setItem('me',JSON.stringify(data.user));
+      window.location.href='discover.html';
+    } else {
+      showError('login',data.msg||'Email ou mot de passe incorrect');
+    }
+  }catch(e){ showError('login','Erreur de connexion'); }
+  btn.disabled=false; btn.textContent='Se connecter';
+}
+
+// ════════════════════════════════
+// RESET PASSWORD
+// ════════════════════════════════
+function openReset() { document.getElementById('reset-modal').classList.add('show'); }
+function closeReset(){ document.getElementById('reset-modal').classList.remove('show'); }
+
+async function sendResetCode(){
+  const email=document.getElementById('reset-email').value.trim();
+  if(!email) return;
+  const res =await fetch(`${API}/send-code?email=${encodeURIComponent(email)}`);
+  const data=await res.json();
+  resetCode=String(data.code);
+  document.getElementById('reset-step-email').style.display='none';
+  document.getElementById('reset-step-code').style.display='block';
+  document.getElementById('reset-modal-text').textContent='Code envoyé à '+email;
+}
+function verifyResetCode(){
+  const inputs =document.querySelectorAll('#reset-step-code .code-input');
+  const entered=Array.from(inputs).map(i=>i.value).join('');
+  if(entered===resetCode){
+    document.getElementById('reset-step-code').style.display='none';
+    document.getElementById('reset-step-newpw').style.display='block';
+    document.getElementById('reset-modal-text').textContent='Choisissez un nouveau mot de passe';
+  } else { alert('Code incorrect'); }
+}
+async function doResetPassword(){
+  const email=document.getElementById('reset-email').value.trim();
+  const pw   =document.getElementById('reset-newpw').value.trim();
+  if(!pw||pw.length<6) return alert('Minimum 6 caractères');
+  await fetch(`${API}/reset-password`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});
+  alert('Mot de passe mis à jour !'); closeReset();
+}
+
+// ════════════════════════════════
+// HELPERS
+// ════════════════════════════════
+function codeNav(el, idx, ctx){
+  el.value=el.value.replace(/\D/g,''); // chiffres seulement
+  const selector= ctx==='reg' ? '#code-inputs-reg .code-input' : '#reset-step-code .code-input';
+  const inputs=document.querySelectorAll(selector);
+  if(el.value && idx<5) inputs[idx+1].focus();
+  // auto-vérifier si 6 chiffres
+  const full=Array.from(inputs).map(i=>i.value).join('');
+  if(full.length===6 && ctx==='reg') verifyAndRegister();
+  if(full.length===6 && ctx==='reset') verifyResetCode();
+}
+
+function showToastInline(msg){
+  const existing=document.getElementById('inline-toast');
+  if(existing) existing.remove();
+  const t=document.createElement('div'); t.id='inline-toast';
+  t.style.cssText='background:#1a1a1a;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;text-align:center;margin-top:12px;';
+  t.textContent=msg;
+  document.querySelector('.verify-wrap')?.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+function showTerms(e){
+  e.preventDefault();
+  document.getElementById('terms-modal').style.display='flex';
+}
+function closeTerms(){
+  document.getElementById('terms-modal').style.display='none';
+}
+function acceptTerms(){
+  document.getElementById('accept-terms').checked=true;
+  closeTerms();
+}
+// ── Init ──
+initStepIndicator();
+if(localStorage.getItem('me')) window.location.href='discover.html';
+</script>
+<div id="terms-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;padding:24px;">
+    <h3 style="font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:16px;text-align:center;">Conditions d'utilisation</h3>
+    
+    <p style="font-size:13px;color:#555;line-height:1.7;margin-bottom:12px;">
+      <strong>1. Objet</strong><br/>
+      NikahConnect est une plateforme de rencontre dédiée au mariage légal. En vous inscrivant, vous confirmez avoir au moins 18 ans.
+    </p>
+    <p style="font-size:13px;color:#555;line-height:1.7;margin-bottom:12px;">
+      <strong>2. Comportement</strong><br/>
+      Tout comportement irrespectueux, harcèlement ou contenu inapproprié est strictement interdit et entraînera la suppression du compte.
+    </p>
+    <p style="font-size:13px;color:#555;line-height:1.7;margin-bottom:12px;">
+      <strong>3. Photos</strong><br/>
+      Les photos doivent vous représenter réellement. Les photos inappropriées ou usurpées sont interdites.
+    </p>
+    <p style="font-size:13px;color:#555;line-height:1.7;margin-bottom:12px;">
+      <strong>4. Confidentialité</strong><br/>
+      Vos données personnelles sont utilisées uniquement pour faire fonctionner le service. Elles ne sont jamais vendues à des tiers.
+    </p>
+    <p style="font-size:13px;color:#555;line-height:1.7;margin-bottom:12px;">
+      <strong>5. Intention sérieuse</strong><br/>
+      NikahConnect est réservé aux personnes ayant une intention sérieuse de mariage. Toute utilisation à d'autres fins est prohibée.
+    </p>
+    <p style="font-size:13px;color:#555;line-height:1.7;margin-bottom:20px;">
+      <strong>6. Suppression</strong><br/>
+      Vous pouvez supprimer votre compte à tout moment. Toutes vos données seront effacées.
+    </p>
+
+    <button onclick="acceptTerms()" style="width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#f5c518,#ffe066);font-size:15px;font-weight:700;color:#1a1a1a;cursor:pointer;">
+      J'accepte ✓
+    </button>
+    <button onclick="closeTerms()" style="width:100%;margin-top:8px;padding:12px;border:1.5px solid #eee;border-radius:12px;background:#fff;font-size:14px;color:#999;cursor:pointer;">
+      Fermer
+    </button>
+  </div>
+</div>
+</body>
+</html>

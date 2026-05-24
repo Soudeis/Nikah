@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Matchs - NikahConnect</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;}
+body{display:flex;justify-content:center;background:linear-gradient(135deg,#ffffff 0%,#fffde7 50%,#fff9c4 100%);min-height:100vh;}
+
+.shell{width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── Topbar ── */
+.topbar{padding:16px 20px 10px;flex-shrink:0;}
+.topbar h1{font-size:26px;font-weight:800;color:#1a1a1a;}
+.topbar p{font-size:13px;color:#aaa;margin-top:2px;}
+
+/* ── Nouveaux matchs (horizontal scroll) ── */
+.section-title{font-size:12px;font-weight:700;color:#aaa;letter-spacing:.6px;padding:0 20px;margin-bottom:12px;}
+
+.new-matches-scroll{display:flex;gap:14px;padding:0 20px 4px;overflow-x:auto;flex-shrink:0;}
+.new-matches-scroll::-webkit-scrollbar{display:none;}
+
+.new-match-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;}
+.new-match-avatar{position:relative;width:70px;height:70px;}
+.new-match-avatar img{width:70px;height:70px;border-radius:50%;object-fit:cover;border:3px solid #f5c518;}
+.new-match-avatar .online-dot{position:absolute;bottom:3px;right:3px;width:12px;height:12px;border-radius:50%;background:#4ade80;border:2px solid #fff;}
+.new-match-name{font-size:12px;font-weight:600;color:#1a1a1a;max-width:70px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.avatar-placeholder{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;border:3px solid #f5c518;}
+
+/* ── Conversations ── */
+.conv-list{flex:1;overflow-y:auto;padding:0 0 80px;}
+.conv-item{display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;transition:background .15s;position:relative;}
+.conv-item:active{background:rgba(245,197,24,.08);}
+.conv-avatar-wrap{position:relative;flex-shrink:0;}
+.conv-avatar{width:58px;height:58px;border-radius:50%;object-fit:cover;}
+.conv-avatar-placeholder{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;}
+.conv-unread-badge{position:absolute;top:0;right:0;width:18px;height:18px;border-radius:50%;background:#f5c518;color:#1a1a1a;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+.conv-info{flex:1;min-width:0;}
+.conv-name{font-size:15px;font-weight:700;color:#1a1a1a;}
+.conv-last{font-size:13px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.conv-last.unread{color:#1a1a1a;font-weight:600;}
+.conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;}
+.conv-time{font-size:11px;color:#ccc;}
+.conv-separator{height:1px;background:rgba(0,0,0,.05);margin:0 20px;}
+
+/* ── Empty ── */
+.empty-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:60px 30px;text-align:center;}
+.empty-icon{width:80px;height:80px;background:linear-gradient(135deg,#f5c518,#ffe066);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+.empty-icon svg{width:40px;height:40px;}
+.empty-wrap h3{font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:8px;}
+.empty-wrap p{font-size:14px;color:#aaa;line-height:1.6;}
+.btn-discover{margin-top:24px;padding:14px 32px;background:linear-gradient(135deg,#f5c518,#ffe066);border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(245,197,24,.4);}
+
+/* ── Profile sheet ── */
+/* NOUVEAU */
+.profile-sheet{
+  position:fixed;
+  top:0;bottom:0;
+  left:50%;
+  transform:translateX(-50%) translateY(100%);
+  width:100%;
+  max-width:480px;
+  background:#fff;
+  z-index:150;
+  overflow-y:auto;
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.profile-sheet.open{
+  transform:translateX(-50%) translateY(0);
+}
+.sheet-photos{
+  width:100%;
+  aspect-ratio:3/4;
+  max-height:75vh;
+  position:relative;
+  overflow:hidden;
+}
+
+.sheet-photo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center center;  /* centré, pas top */
+}
+
+.sheet-photo{position:absolute;inset:0;opacity:0;transition:opacity .4s;}
+.sheet-photo.active{opacity:1;}
+
+.sheet-photo-bars{position:absolute;top:12px;left:12px;right:12px;display:flex;gap:4px;z-index:5;}
+.sheet-photo-bar{flex:1;height:3px;background:rgba(255,255,255,.4);border-radius:2px;overflow:hidden;}
+.sheet-photo-bar-fill{height:100%;background:#fff;border-radius:2px;}
+.sheet-close{position:absolute;top:16px;right:16px;z-index:10;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.4);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.sheet-close svg{width:18px;height:18px;stroke:#fff;}
+.sheet-nav-l{position:absolute;left:0;top:0;width:35%;height:100%;z-index:4;cursor:pointer;}
+.sheet-nav-r{position:absolute;right:0;top:0;width:35%;height:100%;z-index:4;cursor:pointer;}
+.sheet-body{padding:24px 20px 40px;}
+.sheet-name{font-size:26px;font-weight:800;color:#1a1a1a;}
+.sheet-name span{font-size:20px;font-weight:400;color:#666;}
+.infos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0;}
+.info-card{background:linear-gradient(135deg,#fffde7,#fff9c4);border-radius:14px;padding:14px;}
+.info-card-icon{font-size:18px;margin-bottom:4px;}
+.info-card-label{font-size:10px;font-weight:700;color:#aaa;letter-spacing:.5px;}
+.info-card-value{font-size:14px;font-weight:600;color:#1a1a1a;margin-top:2px;}
+.sheet-desc-title{font-size:12px;font-weight:700;color:#aaa;letter-spacing:.5px;margin-bottom:8px;}
+.sheet-desc{font-size:15px;color:#333;line-height:1.7;}
+.sheet-actions{display:flex;gap:12px;margin-top:28px;}
+.sheet-btn-msg{flex:1;padding:15px;border:none;border-radius:14px;background:linear-gradient(135deg,#f5c518,#ffe066);font-size:15px;font-weight:700;color:#1a1a1a;cursor:pointer;box-shadow:0 4px 12px rgba(245,197,24,.4);}
+.sheet-btn-del{padding:15px 20px;border:1.5px solid #fee2e2;border-radius:14px;background:#fff;font-size:15px;font-weight:700;color:#f87171;cursor:pointer;}
+
+/* ── Loader ── */
+.loader{display:flex;align-items:center;justify-content:center;padding:40px;}
+.spinner{width:36px;height:36px;border:3px solid #eee;border-top-color:#f5c518;border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Navbar ── */
+.navbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;padding:10px 0 20px;border-top:1px solid rgba(0,0,0,.06);background:rgba(255,255,255,.92);backdrop-filter:blur(20px);z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;text-decoration:none;}
+.nav-item svg{width:24px;height:24px;stroke:#ccc;transition:.2s;}
+.nav-item.active svg{stroke:#f5c518;}
+.nav-label{font-size:10px;color:#ccc;font-weight:600;}
+.nav-item.active .nav-label{color:#f5c518;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="topbar">
+    <h1>Vos Matchs 💛</h1>
+    <p>Commencez une conversation</p>
+  </div>
+
+  <div id="main-content">
+    <div class="loader" id="loader"><div class="spinner"></div></div>
+  </div>
+
+  <nav class="navbar">
+    <a class="nav-item" href="discover.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <span class="nav-label">Découvrir</span>
+    </a>
+    <a class="nav-item active" href="matches.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span class="nav-label">Matchs</span>
+    </a>
+    <a class="nav-item" href="messages.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-label">Messages</span>
+    </a>
+    <a class="nav-item" href="profile.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span class="nav-label">Profil</span>
+    </a>
+  </nav>
+</div>
+
+<!-- Profile sheet -->
+<div class="profile-sheet" id="profile-sheet">
+  <div style="position:relative;">
+    <div class="sheet-photos" id="sheet-photos">
+      <div class="sheet-photo-bars" id="sheet-photo-bars"></div>
+      <div class="sheet-nav-l" onclick="sheetPrev()"></div>
+      <div class="sheet-nav-r" onclick="sheetNext()"></div>
+    </div>
+    <button class="sheet-close" onclick="closeSheet()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="sheet-body" id="sheet-body"></div>
+</div>
+
+<script>
+const API = "http://161.97.172.249:8000";
+const me  = JSON.parse(localStorage.getItem('me'));
+if(!me) window.location.href = 'index.html';
+
+let matches      = [];
+let sheetUser    = null;
+let sheetPhotoIdx = 0;
+
+const COLORS = ['#f5c518','#e8547a','#9b59b6','#3498db','#2ecc71','#e67e22'];
+function colorFor(id){ return COLORS[Math.abs(parseInt(id||0)) % COLORS.length]; }
+function initials(p){ return ((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase(); }
+function avatarHTML(p, size=58, border=false){
+  const b = border ? `border:3px solid #f5c518;` : '';
+  if(p.photos && p.photos[0])
+    return `<img src="${p.photos[0]}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;${b}" alt=""/>`;
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${colorFor(p.other_id||p.id)};display:flex;align-items:center;justify-content:center;font-size:${size*0.3}px;font-weight:700;color:#fff;${b}">${initials(p)}</div>`;
+}
+
+// ════════════════════════════════
+// LOAD
+// ════════════════════════════════
+async function loadMatches(){
+  try{
+    const res = await fetch(`${API}/matches/${me.id}`);
+    matches   = await res.json();
+    render();
+  }catch(e){ console.error(e); }
+  document.getElementById('loader').style.display = 'none';
+}
+
+// ════════════════════════════════
+// RENDER
+// ════════════════════════════════
+function render(){
+  const cont = document.getElementById('main-content');
+  if(!matches.length){
+    cont.innerHTML = `
+      <div class="empty-wrap">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <h3>Pas encore de matchs</h3>
+        <p>Continuez à explorer pour trouver votre moitié</p>
+        <button class="btn-discover" onclick="location.href='discover.html'">Découvrir des profils</button>
+      </div>`;
+    return;
+  }
+
+  // Séparer nouveaux matchs (pas de messages) et conversations
+  const newMatches  = matches.slice(0, Math.min(matches.length, 8));
+  const convMatches = matches;
+
+  cont.innerHTML = `
+    <div style="margin:16px 0 8px;">
+      <div class="section-title">NOUVEAUX MATCHS</div>
+      <div class="new-matches-scroll" id="new-matches-row"></div>
+    </div>
+    <div style="margin-top:20px;">
+      <div class="section-title">CONVERSATIONS</div>
+      <div class="conv-list" id="conv-list"></div>
+    </div>
+  `;
+
+  // Nouveaux matchs (bulles horizontales)
+  const newRow = document.getElementById('new-matches-row');
+  newMatches.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'new-match-item';
+    div.onclick = () => openSheet(m);
+    div.innerHTML = `
+      <div class="new-match-avatar">
+        ${avatarHTML(m, 70, true)}
+      </div>
+      <div class="new-match-name">${m.prenom}</div>`;
+    newRow.appendChild(div);
+  });
+
+  // Conversations
+  const convList = document.getElementById('conv-list');
+  convMatches.forEach((m, i) => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <div class="conv-item" onclick="openChat(${JSON.stringify(m).replace(/"/g,'&quot;')})">
+        <div class="conv-avatar-wrap">
+          ${avatarHTML(m, 58)}
+        </div>
+        <div class="conv-info">
+          <div class="conv-name">${m.prenom} ${m.nom||''}</div>
+          <div class="conv-last">${m.ville||''} ${m.profession ? '· '+m.profession : ''}</div>
+        </div>
+        <div class="conv-meta">
+          <div class="conv-time">${formatDate(m.created_at)}</div>
+        </div>
+      </div>
+      ${i < convMatches.length-1 ? '<div class="conv-separator"></div>' : ''}
+    `;
+    convList.appendChild(div);
+  });
+}
+
+function formatDate(str){
+  if(!str) return '';
+  const d   = new Date(str);
+  const now = new Date();
+  const diff = now - d;
+  if(diff < 86400000){
+    return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
+  }
+  if(diff < 604800000){
+    const days = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    return days[d.getDay()];
+  }
+  return d.getDate()+'/'+(d.getMonth()+1);
+}
+
+// ════════════════════════════════
+// OPEN CHAT
+// ════════════════════════════════
+function openChat(m){
+  const friend = {
+    id:      m.other_id,
+    nom:     m.nom,
+    prenom:  m.prenom,
+    photos:  m.photos,
+    photo:   m.photos?.[0] || null,
+    ville:   m.ville,
+    profession: m.profession,
+  };
+  localStorage.setItem('currentFriend', JSON.stringify(friend));
+  window.location.href = 'chat.html';
+}
+
+// ════════════════════════════════
+// PROFILE SHEET
+// ════════════════════════════════
+function openSheet(m){
+  sheetUser     = m;
+  sheetPhotoIdx = 0;
+  const photos  = m.photos?.length ? m.photos : [];
+
+  const photosEl = document.getElementById('sheet-photos');
+  const barsEl   = document.getElementById('sheet-photo-bars');
+  photosEl.querySelectorAll('.sheet-photo').forEach(el => el.remove());
+
+  if(photos.length){
+    photos.forEach((ph, i) => {
+      const div = document.createElement('div');
+      div.className = `sheet-photo ${i===0?'active':''}`;
+      div.id = `sph-${i}`;
+      div.innerHTML = `<img src="${ph}" alt=""/>`;
+      photosEl.appendChild(div);
+    });
+    barsEl.innerHTML = photos.map((_,i) =>
+      `<div class="sheet-photo-bar"><div class="sheet-photo-bar-fill" id="spbar-${i}" style="width:${i===0?'100':'0'}%"></div></div>`
+    ).join('');
+    barsEl.style.display = 'flex';
+  } else {
+    // Pas de photo : afficher avatar coloré
+    const div = document.createElement('div');
+    div.className = 'sheet-photo active';
+    div.style.cssText = `background:${colorFor(m.other_id)};display:flex;align-items:center;justify-content:center;`;
+    div.innerHTML = `<div style="font-size:80px;font-weight:700;color:#fff;">${initials(m)}</div>`;
+    photosEl.appendChild(div);
+    barsEl.style.display = 'none';
+  }
+
+  const tags = [
+    {icon:'🎂', label:'Âge',        value: m.age ? m.age+' ans' : null},
+    {icon:'📍', label:'Ville',      value: m.ville || null},
+    {icon:'💼', label:'Profession', value: m.profession || null},
+  ].filter(t => t.value);
+
+  document.getElementById('sheet-body').innerHTML = `
+    <div class="sheet-name">${m.prenom} <span>${m.nom||''}</span></div>
+    <div class="infos-grid">
+      ${tags.map(t => `
+        <div class="info-card">
+          <div class="info-card-icon">${t.icon}</div>
+          <div class="info-card-label">${t.label.toUpperCase()}</div>
+          <div class="info-card-value">${t.value}</div>
+        </div>`).join('')}
+    </div>
+    <div class="sheet-actions">
+      <button class="sheet-btn-msg" onclick="closeSheet();openChat(${JSON.stringify(m).replace(/"/g,"'")})">
+        💬 Envoyer un message
+      </button>
+      <button class="sheet-btn-del" onclick="confirmDelete(${m.other_id})">🗑</button>
+    </div>
+  `;
+
+  document.getElementById('profile-sheet').classList.add('open');
+}
+
+function closeSheet(){
+  document.getElementById('profile-sheet').classList.remove('open');
+}
+
+function sheetNext(){
+  if(!sheetUser?.photos?.length) return;
+  sheetPhotoIdx = Math.min(sheetPhotoIdx+1, sheetUser.photos.length-1);
+  updateSheetPhoto();
+}
+function sheetPrev(){
+  sheetPhotoIdx = Math.max(sheetPhotoIdx-1, 0);
+  updateSheetPhoto();
+}
+function updateSheetPhoto(){
+  const total = sheetUser?.photos?.length || 0;
+  for(let i=0;i<total;i++){
+    document.getElementById('sph-'+i)?.classList.toggle('active', i===sheetPhotoIdx);
+    const br = document.getElementById('spbar-'+i);
+    if(br) br.style.width = i<=sheetPhotoIdx ? '100%' : '0%';
+  }
+}
+
+// ════════════════════════════════
+// DELETE MATCH
+// ════════════════════════════════
+async function confirmDelete(otherId){
+  if(!confirm('Supprimer ce match ?')) return;
+  closeSheet();
+  try{
+    await fetch(`${API}/match/${me.id}/${otherId}`, {method:'DELETE'});
+    matches = matches.filter(m => m.other_id !== otherId);
+    render();
+  }catch(e){ alert('Erreur réseau'); }
+}
+
+loadMatches();
+</script>
+</body>
+</html>
