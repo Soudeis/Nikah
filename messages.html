@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Messages - NikahConnect</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;}
+body{display:flex;justify-content:center;background:linear-gradient(135deg,#ffffff 0%,#fffde7 50%,#fff9c4 100%);min-height:100vh;}
+
+.shell{width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;}
+
+.topbar{padding:16px 20px 12px;flex-shrink:0;}
+.topbar h1{font-size:26px;font-weight:800;color:#1a1a1a;}
+
+.search-wrap{padding:0 16px 12px;flex-shrink:0;}
+.search-box{display:flex;align-items:center;gap:10px;background:#fff;border-radius:14px;padding:10px 14px;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+.search-box svg{width:18px;height:18px;stroke:#ccc;flex-shrink:0;}
+.search-box input{flex:1;border:none;outline:none;font-size:14px;color:#1a1a1a;background:none;}
+.search-box input::placeholder{color:#ccc;}
+
+.conv-list{flex:1;overflow-y:auto;padding-bottom:80px;}
+
+.conv-item{display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;transition:background .15s;}
+.conv-item:active{background:rgba(245,197,24,.06);}
+.conv-avatar-wrap{position:relative;flex-shrink:0;}
+.conv-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;}
+.conv-avatar-ph{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;}
+.unread-dot{position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#f5c518;border:2px solid #fff;}
+.conv-info{flex:1;min-width:0;}
+.conv-name{font-size:15px;font-weight:700;color:#1a1a1a;}
+.conv-preview{font-size:13px;color:#aaa;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.conv-preview.bold{color:#1a1a1a;font-weight:600;}
+.conv-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+.conv-time{font-size:11px;color:#ccc;}
+.unread-count{background:#f5c518;color:#1a1a1a;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.separator{height:1px;background:rgba(0,0,0,.04);margin:0 20px;}
+
+.empty-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:60px 30px;text-align:center;}
+.empty-icon{width:72px;height:72px;background:linear-gradient(135deg,#f5c518,#ffe066);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
+.empty-icon svg{width:36px;height:36px;}
+.empty-wrap h3{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
+.empty-wrap p{font-size:13px;color:#aaa;line-height:1.6;}
+
+.loader{display:flex;align-items:center;justify-content:center;padding:50px;}
+.spinner{width:36px;height:36px;border:3px solid #eee;border-top-color:#f5c518;border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.navbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;padding:10px 0 20px;border-top:1px solid rgba(0,0,0,.06);background:rgba(255,255,255,.92);backdrop-filter:blur(20px);z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;text-decoration:none;}
+.nav-item svg{width:24px;height:24px;stroke:#ccc;}
+.nav-item.active svg{stroke:#f5c518;}
+.nav-label{font-size:10px;color:#ccc;font-weight:600;}
+.nav-item.active .nav-label{color:#f5c518;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="topbar">
+    <h1>Messages</h1>
+  </div>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search-input" placeholder="Rechercher..." oninput="filterConvs(this.value)"/>
+    </div>
+  </div>
+
+  <div class="loader" id="loader"><div class="spinner"></div></div>
+  <div class="conv-list" id="conv-list" style="display:none;"></div>
+
+  <nav class="navbar">
+    <a class="nav-item" href="discover.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <span class="nav-label">Découvrir</span>
+    </a>
+    <a class="nav-item" href="matches.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span class="nav-label">Matchs</span>
+    </a>
+    <a class="nav-item active" href="messages.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="nav-label">Messages</span>
+    </a>
+    <a class="nav-item" href="profile.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span class="nav-label">Profil</span>
+    </a>
+  </nav>
+</div>
+
+<script>
+const API    = "https://monbackend.duckdns.org";
+const me     = JSON.parse(localStorage.getItem('me'));
+if(!me) window.location.href = 'index.html';
+
+let allMatches = [];
+const COLORS   = ['#f5c518','#e8547a','#9b59b6','#3498db','#2ecc71','#e67e22'];
+function colorFor(id){ return COLORS[Math.abs(parseInt(id||0)) % COLORS.length]; }
+function initials(p){ return ((p.prenom||'?')[0]+(p.nom||'?')[0]).toUpperCase(); }
+
+function formatTime(str){
+  if(!str) return '';
+  const d   = new Date(str);
+  const now = new Date();
+  const diff = now - d;
+  if(diff < 86400000) return d.getHours()+':'+String(d.getMinutes()).padStart(2,'0');
+  if(diff < 604800000){ const days=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam']; return days[d.getDay()]; }
+  return d.getDate()+'/'+(d.getMonth()+1);
+}
+
+async function loadConversations(){
+  try{
+    const res  = await fetch(`${API}/matches/${me.id}`);
+    allMatches = await res.json();
+    renderConvs(allMatches);
+  }catch(e){ console.error(e); }
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('conv-list').style.display = 'block';
+}
+
+function renderConvs(list){
+  const el = document.getElementById('conv-list');
+  if(!list.length){
+    el.innerHTML = `
+      <div class="empty-wrap">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Aucune conversation</h3>
+        <p>Matchez avec des profils pour commencer à discuter</p>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = list.map((m, i) => {
+    const avatarHTML = m.photos?.[0]
+      ? `<img class="conv-avatar" src="${m.photos[0]}" alt=""/>`
+      : `<div class="conv-avatar-ph" style="background:${colorFor(m.other_id)}">${initials(m)}</div>`;
+
+    return `
+      <div class="conv-item" onclick="openChat(${m.other_id},'${m.prenom}','${m.nom||''}','${m.photos?.[0]||''}')">
+        <div class="conv-avatar-wrap">${avatarHTML}</div>
+        <div class="conv-info">
+          <div class="conv-name">${m.prenom} ${m.nom||''}</div>
+          <div class="conv-preview">${m.ville||''} ${m.profession?'· '+m.profession:''}</div>
+        </div>
+        <div class="conv-right">
+          <div class="conv-time">${formatTime(m.created_at)}</div>
+        </div>
+      </div>
+      ${i < list.length-1 ? '<div class="separator"></div>' : ''}
+    `;
+  }).join('');
+}
+
+function filterConvs(q){
+  if(!q.trim()){ renderConvs(allMatches); return; }
+  const filtered = allMatches.filter(m =>
+    (m.prenom+' '+(m.nom||'')).toLowerCase().includes(q.toLowerCase())
+  );
+  renderConvs(filtered);
+}
+
+function openChat(id, prenom, nom, photo){
+  const friend = { id, prenom, nom, photo: photo||null, photos: photo ? [photo] : [] };
+  localStorage.setItem('currentFriend', JSON.stringify(friend));
+  window.location.href = 'chat.html';
+}
+
+loadConversations();
+</script>
+</body>
+</html>
