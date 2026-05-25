@@ -11,7 +11,7 @@
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
+ OneSignalDeferred.push(async function(OneSignal) {
     await OneSignal.init({
       appId: "b8121f9b-4e34-4a74-bb6a-4caaeeea880b",
       notifyButton: { enable: false },
@@ -20,6 +20,10 @@
     });
     const meData = JSON.parse(localStorage.getItem('me'));
     if(meData) await OneSignal.login(String(meData.id));
+    
+    // Demander la permission explicitement
+    const permission = await OneSignal.Notifications.requestPermission();
+    console.log('Permission:', permission);
 });
 </script>
 <title>Chat - NikahConnect</title>
