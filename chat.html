@@ -15,10 +15,12 @@
     await OneSignal.init({
       appId: "b8121f9b-4e34-4a74-bb6a-4caaeeea880b",
       notifyButton: { enable: false },
+      serviceWorkerPath: "/Nikah/OneSignalSDKWorker.js",
+      serviceWorkerParam: { scope: "/Nikah/" },
     });
     const meData = JSON.parse(localStorage.getItem('me'));
     if(meData) await OneSignal.login(String(meData.id));
-  });
+});
 </script>
 <title>Chat - NikahConnect</title>
 <style>
