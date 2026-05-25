@@ -211,7 +211,7 @@ body{display:flex;justify-content:center;background:linear-gradient(135deg,#ffff
 <body>
 <div class="shell">
   <div class="topbar">
-    <button class="back" onclick="history.back()">←</button>
+    <button class="back" onclick="window.location.href='matches.html'">←</button>
     <div id="friend-avatar-top"></div>
     <div class="topbar-info">
       <h2 id="chat-name"></h2>
@@ -282,6 +282,23 @@ body{display:flex;justify-content:center;background:linear-gradient(135deg,#ffff
 </div>
 
 <script>
+  // Si on arrive via une notification, charger l'ami depuis l'URL
+const urlParams = new URLSearchParams(window.location.search);
+const fromId = urlParams.get('from');
+if(fromId && (!localStorage.getItem('currentFriend') || JSON.parse(localStorage.getItem('currentFriend')).id != fromId)){
+  // Charger le profil de l'expéditeur
+  fetch(`${API}/profile/${fromId}`)
+    .then(r => r.json())
+    .then(profile => {
+      localStorage.setItem('currentFriend', JSON.stringify({
+        id: profile.id,
+        nom: profile.nom,
+        prenom: profile.prenom,
+        photos: profile.photos,
+      }));
+      window.location.reload();
+    });
+}
 // Remplace par ton vrai sous-domaine en HTTPS et SANS le port 8000
 const API = "https://monbackend.duckdns.org";
 const WS_URL   = "wss://monbackend.duckdns.org/ws";
