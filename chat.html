@@ -20,6 +20,21 @@
     });
     const meData = JSON.parse(localStorage.getItem('me'));
     if(meData) await OneSignal.login(String(meData.id));
+   // Juste après OneSignal.login(...)
+if(!localStorage.getItem('push_asked')){
+  const btn = document.createElement('div');
+  btn.style.cssText = `position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+    background:#f5c518;color:#1a1a1a;padding:12px 24px;border-radius:30px;
+    font-size:14px;font-weight:700;cursor:pointer;z-index:500;
+    box-shadow:0 4px 16px rgba(245,197,24,.5);white-space:nowrap;`;
+  btn.textContent = '🔔 Activer les notifications';
+  btn.onclick = async () => {
+    btn.remove();
+    localStorage.setItem('push_asked','1');
+    await OneSignal.Notifications.requestPermission();
+  };
+  document.body.appendChild(btn);
+}
     
     // Demander la permission explicitement
     const permission = await OneSignal.Notifications.requestPermission();
